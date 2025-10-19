@@ -275,16 +275,16 @@ const Attendance = () => {
         <div className="space-y-6">
           <div className="bg-white rounded shadow-md p-6">
             <h3 className="text-xl font-semibold text-gray-800 mb-4">Select Date to View</h3>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col gap-4">
               <input
                 type="date"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-red-800 focus:border-red-800"
+                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-red-800 focus:border-red-800"
                 value={viewDate}
                 onChange={(e) => setViewDate(e.target.value)}
               />
               <button
                 onClick={() => fetchAttendanceByDate(viewDate)}
-                className="flex items-center justify-center px-6 py-2 bg-red-800 hover:bg-red-900 text-white rounded font-medium"
+                className="w-full sm:w-auto flex items-center justify-center px-6 py-2 bg-red-800 hover:bg-red-900 text-white rounded font-medium"
               >
                 <FaEye className="mr-2" />
                 View Attendance
