@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import API from "../utils/api";
-import { FaCalendarAlt, FaCheckCircle, FaTimesCircle, FaSave, FaSearch } from "react-icons/fa";
+import { FaCalendarAlt, FaCheckCircle, FaTimesCircle, FaSave, FaSearch, FaHistory, FaEye } from "react-icons/fa";
 
 const Attendance = () => {
   const [students, setStudents] = useState([]);
@@ -8,10 +8,27 @@ const Attendance = () => {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [viewMode, setViewMode] = useState("mark"); // "mark" or "view"
+  const [viewDate, setViewDate] = useState(new Date().toISOString().split("T")[0]);
+  const [viewAttendance, setViewAttendance] = useState(null);
+  const [loadingView, setLoadingView] = useState(false);
 
   const fetchStudents = async () => {
     const res = await API.get("/students");
     setStudents(res.data);
+  };
+
+  const fetchAttendanceByDate = async (selectedDate) => {
+    setLoadingView(true);
+    try {
+      const res = await API.get(`/attendance/${selectedDate}`);
+      setViewAttendance(res.data);
+    } catch (error) {
+      console.error("Error fetching attendance:", error);
+      setViewAttendance(null);
+    } finally {
+      setLoadingView(false);
+    }
   };
 
   const handleMark = (id, status) => {
@@ -79,12 +96,41 @@ const Attendance = () => {
   return (
     <div className="p-4 md:p-6 lg:p-8">
       <div className="mb-6">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Mark Attendance</h2>
-        <p className="text-gray-600">Record daily attendance for students</p>
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Attendance Management</h2>
+        <p className="text-gray-600">Mark or view attendance records</p>
       </div>
 
-      {/* Date and Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      {/* Toggle Buttons */}
+      <div className="mb-6 flex gap-4">
+        <button
+          onClick={() => setViewMode("mark")}
+          className={`flex items-center px-6 py-3 rounded font-medium transition ${
+            viewMode === "mark"
+              ? "bg-red-800 text-white shadow-md"
+              : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+          }`}
+        >
+          <FaCalendarAlt className="mr-2" />
+          Mark Attendance
+        </button>
+        <button
+          onClick={() => setViewMode("view")}
+          className={`flex items-center px-6 py-3 rounded font-medium transition ${
+            viewMode === "view"
+              ? "bg-red-800 text-white shadow-md"
+              : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+          }`}
+        >
+          <FaHistory className="mr-2" />
+          View History
+        </button>
+      </div>
+
+      {/* Mark Attendance Section */}
+      {viewMode === "mark" && (
+        <>
+          {/* Date and Stats Section */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow-md p-6">
           <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
             <FaCalendarAlt className="mr-2 text-red-800" />
@@ -210,17 +256,103 @@ const Attendance = () => {
         </div>
       </div>
 
-      {/* Save Button */}
-      <div className="flex justify-end">
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="flex items-center px-8 py-3 bg-gradient-to-r from-red-900 to-red-800 text-white rounded-md hover:from-red-800 hover:to-red-700 transition-all duration-200 font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <FaSave className="mr-2" />
-          {loading ? "Saving..." : "Save Attendance"}
-        </button>
-      </div>
+          {/* Save Button */}
+          <div className="flex justify-end">
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="flex items-center px-8 py-3 bg-red-800 hover:bg-red-900 text-white rounded font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <FaSave className="mr-2" />
+              {loading ? "Saving..." : "Save Attendance"}
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* View Attendance History */}
+      {viewMode === "view" && (
+        <div className="space-y-6">
+          <div className="bg-white rounded shadow-md p-6">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Select Date to View</h3>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <input
+                type="date"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-red-800 focus:border-red-800"
+                value={viewDate}
+                onChange={(e) => setViewDate(e.target.value)}
+              />
+              <button
+                onClick={() => fetchAttendanceByDate(viewDate)}
+                className="flex items-center justify-center px-6 py-2 bg-red-800 hover:bg-red-900 text-white rounded font-medium"
+              >
+                <FaEye className="mr-2" />
+                View Attendance
+              </button>
+            </div>
+          </div>
+
+          {loadingView ? (
+            <div className="bg-white rounded shadow-md p-8 text-center">
+              <p className="text-gray-600">Loading attendance records...</p>
+            </div>
+          ) : viewAttendance && viewAttendance.records ? (
+            <div className="bg-white rounded shadow-md overflow-hidden">
+              <div className="p-6 bg-gray-800 text-white">
+                <h3 className="text-xl font-semibold">
+                  Attendance for {new Date(viewAttendance.date).toLocaleDateString()}
+                </h3>
+                <div className="mt-2 flex gap-6">
+                  <span className="text-green-400">
+                    Present: {viewAttendance.records.filter((r) => r.status === "Present").length}
+                  </span>
+                  <span className="text-red-400">
+                    Absent: {viewAttendance.records.filter((r) => r.status === "Absent").length}
+                  </span>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Reg No</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {viewAttendance.records.map((record) => (
+                      <tr key={record._id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-gray-800">{record.student?.name || "N/A"}</td>
+                        <td className="px-4 py-3 text-gray-600">{record.student?.regNo || "N/A"}</td>
+                        <td className="px-4 py-3 text-center">
+                          <span
+                            className={`inline-block px-4 py-1 rounded font-medium ${
+                              record.status === "Present"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {record.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : viewAttendance && viewAttendance.message ? (
+            <div className="bg-white rounded shadow-md p-8 text-center">
+              <p className="text-gray-600">{viewAttendance.message}</p>
+            </div>
+          ) : (
+            <div className="bg-white rounded shadow-md p-8 text-center">
+              <p className="text-gray-600">Select a date to view attendance records</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
