@@ -272,24 +272,23 @@ const Attendance = () => {
 
       {/* View Attendance History */}
       {viewMode === "view" && (
-        <div className="space-y-6">
-          <div className="bg-white rounded shadow-md p-6">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Select Date to View</h3>
-            <div className="flex flex-col gap-4">
-              <input
-                type="date"
-                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-red-800 focus:border-red-800"
-                value={viewDate}
-                onChange={(e) => setViewDate(e.target.value)}
-              />
-              <button
-                onClick={() => fetchAttendanceByDate(viewDate)}
-                className="w-full sm:w-auto flex items-center justify-center px-6 py-2 bg-red-800 hover:bg-red-900 text-white rounded font-medium"
-              >
-                <FaEye className="mr-2" />
-                View Attendance
-              </button>
-            </div>
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-xl font-bold text-gray-800 mb-4">View Attendance Records</h3>
+          <div className="flex flex-col md:flex-row gap-4 items-center mb-4">
+            <input
+              type="date"
+              className="w-full md:w-auto px-4 py-3 border-b border-gray-300 focus:outline-none focus:border-b-2 focus:border-red-800 transition bg-transparent"
+              value={viewDate}
+              onChange={(e) => setViewDate(e.target.value)}
+            />
+            <button
+              onClick={() => fetchAttendanceByDate(viewDate)}
+              className="w-full md:w-auto flex items-center justify-center px-6 py-3 bg-red-800 text-white rounded-md hover:bg-red-900 transition font-medium"
+              disabled={loadingView}
+            >
+              <FaEye className="mr-2" />
+              View Attendance
+            </button>
           </div>
 
           {loadingView ? (
