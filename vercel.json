@@ -1,18 +1,5 @@
 {
-  "functions": {
-    "src/app/api/**/*.js": {
-      "runtime": "nodejs20.x"
-    }
-  },
-  "build": {
-    "env": {
-      "ENABLE_EXPERIMENTAL_COREPACK": "1"
-    }
-  },
-  "crons": [
-    {
-      "path": "/api/cron/email-check",
-      "schedule": "*/10 * * * *"
-    }
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
   ]
 }
