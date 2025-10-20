@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api", // your backend URL
-  // baseURL: "https://attendance-backend-4736.onrender.com/api", // your backend URL
+  // baseURL: "http://localhost:5000/api", // your backend URL
+  baseURL: "https://attendance-backend-4736.onrender.com/api", // your backend URL
 });
 
 // Automatically attach JWT token
